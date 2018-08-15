@@ -1,14 +1,19 @@
-import scodec.bits.{BitVector, _}
+import java.nio.charset.Charset
+
+import scodec.bits.BitVector
+import scodec.codecs._
+import scodec.{Attempt, DecodeResult, _}
 
 object Main {
 
   def main(args: Array[String]): Unit = {
     val input = "0200F238040100E09008000000000000010016536900512989610902200000000001000002091104266123210604270209051098402950040003124900TECBAN BRAZILTECBAN SUP GOLF CIN    LONDRINA      BRA9861F01C9EDAA87681802610000000015010760000000000011#102@0#103@"
-    println(input.slice(0,4))
-    println(input.slice(4,20))
-    println(input.slice(20,36))
-    println(input.substring(36))
-    println(hex"F238040100E090080000000000000100".bits.toBin)
+
+    val body = "16536900512989610902200000000001000002091104266123210604270209051098402950040003124900TECBAN BRAZILTECBAN SUP GOLF CIN    LONDRINA      BRA9861F01C9EDAA87681802610000000015010760000000000011#102@0#103@"
+    println(
+      (LLString :: IntString(6)).decode(BitVector(body.getBytes))
+    )
+
     decode(input)
   }
 
@@ -49,6 +54,7 @@ object Main {
     val firstBitMap = BitVector.fromHex(input.slice(4, 20)).get
     val secondBitMap = BitVector.fromHex(input.slice(20, 36)).get
     var body = input.substring(36)
+
     val pan = if (firstBitMap.toBin.charAt(BitMap.Pan - 1).equals('1')) {
       val panSize = 2
       val contentSize = body.slice(index, panSize) // because is LL
@@ -124,4 +130,69 @@ object Main {
 
     Message()
   }
+}
+
+case object LLString extends Codec[String] {
+  implicit val charset: Charset = Charset.defaultCharset()
+
+  def encode(b: String) = {
+    string.encode(b)
+  }
+
+  def decode(b: BitVector) = {
+    string.decode(b) match {
+      case Attempt.Successful(str) => {
+        val contentSize = str.value.slice(0, 2)
+        val content = str.value.slice(2, contentSize.toInt + contentSize.length).toString
+        val remain = str.value.slice(contentSize.toInt + contentSize.length, str.value.length)
+        Attempt.successful(DecodeResult.apply(content, BitVector(remain.getBytes)))
+      }
+      case Attempt.Failure(e) => Attempt.failure(e)
+    }
+  }
+
+  override def sizeBound: SizeBound = SizeBound.atLeast(2)
+}
+
+case object LLLString extends Codec[String] {
+  implicit val charset: Charset = Charset.defaultCharset()
+
+  def encode(b: String) = {
+    string.encode(b)
+  }
+
+  def decode(b: BitVector) = {
+    string.decode(b) match {
+      case Attempt.Successful(str) => {
+        val contentSize = str.value.slice(0, 3)
+        val content = str.value.slice(3, contentSize.toInt + contentSize.length).toString
+        val remain = str.value.slice(contentSize.toInt + contentSize.length, str.value.length)
+        Attempt.successful(DecodeResult.apply(content, BitVector(remain.getBytes)))
+      }
+      case Attempt.Failure(e) => Attempt.failure(e)
+    }
+  }
+
+  override def sizeBound: SizeBound = SizeBound.atLeast(2)
+}
+
+case class IntString(size:Int) extends Codec[String] {
+  implicit val charset: Charset = Charset.defaultCharset()
+
+  def encode(b: String) = {
+    string.encode(b)
+  }
+
+  def decode(b: BitVector) = {
+    string.decode(b) match {
+      case Attempt.Successful(str) => {
+        val content = str.value.slice(0, size)
+        val remain = str.value.slice(size, str.value.length)
+        Attempt.successful(DecodeResult.apply(content, BitVector(remain.getBytes)))
+      }
+      case Attempt.Failure(e) => Attempt.failure(e)
+    }
+  }
+
+  override def sizeBound: SizeBound = SizeBound.atLeast(size)
 }
