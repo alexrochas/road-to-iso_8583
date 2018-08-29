@@ -1,43 +1,79 @@
 import IsoCodec.{IntString, LLLString, LLString}
 import scodec._
+import scodec.bits.BitVector
 
 object Iso8583BitMap {
-  case class Iso8583Bit(index: Int, codec: Codec[_], description: String)
 
-  val bitMap = List[Iso8583Bit](
-    Iso8583Bit(2, LLString, "PAN"),
-    Iso8583Bit(3, IntString(6), "Processing code"),
-    Iso8583Bit(4, IntString(12), "Transaction value"),
-    Iso8583Bit(5, IntString(12), ""),
-    Iso8583Bit(6, IntString(12), "Card holder"),
-    Iso8583Bit(7, IntString(10), "Standard date time"),
-    Iso8583Bit(9, IntString(8), ""),
-    Iso8583Bit(10, IntString(8), ""),
-    Iso8583Bit(11, IntString(6), "Local NSU"),
-    Iso8583Bit(12, IntString(6), "Local time"),
-    Iso8583Bit(13, IntString(4), "Local date"),
-    Iso8583Bit(15, IntString(4), "Accounting date"),
-    Iso8583Bit(16, IntString(4), "Accounting date"),
-    Iso8583Bit(18, IntString(4), "Accounting date"),
-    Iso8583Bit(20, IntString(3), "Accounting date"),
-    Iso8583Bit(21, IntString(3), "Accounting date"),
-    Iso8583Bit(22, IntString(3), "Input mode"),
-    Iso8583Bit(32, LLString, "Operator code"),
-    Iso8583Bit(35, LLString, "Second card trail"),
-    Iso8583Bit(37, IntString(12), "Origin NSU"),
-    Iso8583Bit(39, IntString(2), "Response code"),
-    Iso8583Bit(41, IntString(8), "Terminal ID"),
-    Iso8583Bit(42, IntString(15), "Establishment"),
-    Iso8583Bit(43, IntString(40), "Local and address"),
-    Iso8583Bit(49, IntString(3), "Input mode"),
-    Iso8583Bit(52, IntString(16), "Encrypted password"),
-    Iso8583Bit(53, IntString(16), "Password size"),
-    Iso8583Bit(55, LLLString, "Encrypted chip"),
-    Iso8583Bit(61, LLLString, "Terminal type"),
-    Iso8583Bit(62, LLLString, "Transaction data"),
-    Iso8583Bit(63, LLLString, "Positive ID"),
-    Iso8583Bit(120, LLLString, "Generic data"),
-    Iso8583Bit(122, LLLString, "Complementary data"),
-    Iso8583Bit(127, LLLString, "Response NSU"),
-  )
+  case class Iso8583(de02: String,
+                     de03: String,
+                     de04: String,
+                     de05: String,
+                     de06: String,
+                     de07: String,
+                     de09: String,
+                     de10: String,
+                     de11: String,
+                     de12: String,
+                     de13: String,
+                     de15: String,
+                     de16: String,
+                     de18: String,
+                     de20: String,
+                     de21: String,
+                     de22: String,
+                     de32: String,
+                     de35: String,
+                     de37: String,
+                     de39: String,
+                     de41: String,
+                     de42: String,
+                     de43: String,
+                     de49: String,
+                     de52: String,
+                     de53: String,
+                     de55: String,
+                     de61: String,
+                     de62: String,
+                     de63: String,
+                     de120: String,
+                     de122: String,
+                     de127: String
+                    )
+
+  val codec = (bitmap: BitVector) => {
+    (LLString(bitmap.get(2), "PAN") ::
+      IntString(6, bitmap.get(3), "Processing code") ::
+      IntString(12, bitmap.get(4), "Transaction value") ::
+      IntString(12, bitmap.get(5), "") ::
+      IntString(12, bitmap.get(6), "Card holder") ::
+      IntString(10, bitmap.get(7), "Standard date time") ::
+      IntString(8, bitmap.get(9), "") ::
+      IntString(8, bitmap.get(10), "") ::
+      IntString(6, bitmap.get(11), "Local NSU") ::
+      IntString(6, bitmap.get(6), "Local time") ::
+      IntString(4, bitmap.get(13), "Local date") ::
+      IntString(4, bitmap.get(15), "Accounting date") ::
+      IntString(4, bitmap.get(16), "") ::
+      IntString(4, bitmap.get(18), "") ::
+      IntString(3, bitmap.get(20), "") ::
+      IntString(3, bitmap.get(21), "") ::
+      IntString(3, bitmap.get(22), "Input mode") ::
+      LLString(bitmap.get(32), "Operator code") ::
+      LLString(bitmap.get(35), "Second card trail") ::
+      IntString(12, bitmap.get(37), "Origin NSU") ::
+      IntString(2, bitmap.get(39), "Response code") ::
+      IntString(8, bitmap.get(41), "Terminal ID") ::
+      IntString(15, bitmap.get(42), "Establishment") ::
+      IntString(40, bitmap.get(43), "Local and address") ::
+      IntString(3, bitmap.get(49), "Input mode") ::
+      IntString(16, bitmap.get(52), "Encrypted password") ::
+      IntString(16, bitmap.get(53), "Password size") ::
+      LLLString(bitmap.get(55), "Encrypted chip") ::
+      LLLString(bitmap.get(61), "Terminal type") ::
+      LLLString(bitmap.get(62), "Transaction data") ::
+      LLLString(bitmap.get(63), "Positive ID") ::
+      LLLString(bitmap.get(120), "Generic data") ::
+      LLLString(bitmap.get(122), "Complementary data") ::
+      LLLString(bitmap.get(127), "Response NSU")).as[Iso8583]
+  }
 }
