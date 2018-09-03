@@ -10,7 +10,7 @@ package object IsoCodec {
     implicit val charset: Charset = Charset.defaultCharset()
 
     def encode(b: String) = {
-      string.encode(b)
+      string.encode("%02d".format(b.length) + b)
     }
 
     def decode(b: BitVector) = {
@@ -36,7 +36,7 @@ package object IsoCodec {
     implicit val charset: Charset = Charset.defaultCharset()
 
     def encode(b: String) = {
-      string.encode(b)
+      string.encode("%03d".format(b.length) + b)
     }
 
     def decode(b: BitVector) = {
